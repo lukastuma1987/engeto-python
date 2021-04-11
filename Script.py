@@ -12,7 +12,10 @@ print("Prumerna delka trvani vypujcky: " + str(int(np.round(df['duration'].mean(
 
 start_stations_ids_arr = np.unique(df['start_station_id'].to_numpy())
 end_stations_ids_arr = np.unique(df['end_station_id'].to_numpy())
-print("Celkovy pocet stanic: " + str(np.unique(np.concatenate((start_stations_ids_arr,end_stations_ids_arr))).shape[0]))
+stations_ids_arr = np.unique(np.concatenate((start_stations_ids_arr, end_stations_ids_arr)))
+print("Celkovy pocet stanic: " + str(stations_ids_arr.shape[0]))
 
-mask = ~np.isin(start_stations_ids_arr, end_stations_ids_arr)
-print(start_stations_ids_arr[mask])
+only_start_stations_mask = ~np.isin(start_stations_ids_arr, end_stations_ids_arr)
+only_end_stations_mask = ~np.isin(end_stations_ids_arr, start_stations_ids_arr)
+print("Stanice, kde vypujcky pouze zacinaji: " + str(start_stations_ids_arr[only_start_stations_mask]))
+print("Stanice, kde vypujcky pouze konci: " + str(end_stations_ids_arr[only_end_stations_mask]))
