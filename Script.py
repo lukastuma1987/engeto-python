@@ -2,6 +2,7 @@ import sqlalchemy
 import pandas as pd
 import numpy as np
 from geopy.distance import geodesic
+import matplotlib.pyplot as plt
 
 conn_string = f"mysql+pymysql://student:p7@vw7MCatmnKjy7@data.engeto.com/data"
 alchemy_conn = sqlalchemy.create_engine(conn_string)
@@ -29,7 +30,7 @@ print(df_stations_freq.sort_values('start_station_count', ascending=False).head(
 print("Stanice s nejcastejsim koncem vypujcky:")
 print(df_stations_freq.sort_values('end_station_count', ascending=False).head(10).to_string(index=False) + "\n")
 
-
+"""
 def station_coords(station_id):
     station_lat = df.loc[df['start_station_id'] == station_id, 'start_station_latitude']
     station_lon = df.loc[df['start_station_id'] == station_id, 'start_station_longitude']
@@ -52,4 +53,24 @@ for index1 in range(len(stations_ids_arr)):
         stations_distances[index1, index2] = geodesic(coords_1, coords_2).km
 
 print("Nasledujici matice rozmeru " + str(stations_distances.shape) + " obsahuje vzdalenosti v km mezi jednotlivymi stanicemi:")
-print(stations_distances)
+print(stations_distances + "\n")
+"""
+
+pocet_vypujcek_df = df['started_at'].groupby([pd.DatetimeIndex(df['started_at']).year, pd.DatetimeIndex(df['started_at']).month]).count()
+delka_vypujcek_df = df[['started_at', 'duration']].groupby([pd.DatetimeIndex(df['started_at']).year, pd.DatetimeIndex(df['started_at']).month])['duration'].mean()/60
+
+
+fig = plt.figure(figsize=(10,8))
+
+ax1 = plt.subplot2grid((2,2), (0,0))
+pocet_vypujcek_df.plot(ax=ax1, title='Vývoj počtu výpůjček kol v čase', grid=True)
+ax1.set_ylabel('počet výpůjček')
+ax1.set_xlabel('rok a měsíc')
+
+ax2 = plt.subplot2grid((2,2), (0,1))
+delka_vypujcek_df.plot(ax=ax2, title='Vývoj průměrné délky výpůjček kol v čase', grid=True)
+ax2.set_ylabel('průměrná délka výpůjčky [min]')
+ax2.set_xlabel('rok a měsíc')
+
+plt.tight_layout()
+plt.show()
