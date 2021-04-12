@@ -56,8 +56,9 @@ print("Nasledujici matice rozmeru " + str(stations_distances.shape) + " obsahuje
 print(stations_distances + "\n")
 """
 
-pocet_vypujcek_df = df['started_at'].groupby([pd.DatetimeIndex(df['started_at']).year, pd.DatetimeIndex(df['started_at']).month]).count()
-delka_vypujcek_df = df[['started_at', 'duration']].groupby([pd.DatetimeIndex(df['started_at']).year, pd.DatetimeIndex(df['started_at']).month])['duration'].mean()/60
+pocet_vypujcek_df = df['started_at'].groupby([pd.to_datetime(df['started_at']).dt.isocalendar().year, pd.to_datetime(df['started_at']).dt.isocalendar().week]).count()
+delka_vypujcek_df = df[['started_at', 'duration']].groupby([pd.to_datetime(df['started_at']).dt.isocalendar().year, pd.to_datetime(df['started_at']).dt.isocalendar().week])['duration'].mean()/60
+print(delka_vypujcek_df.head())
 
 
 fig = plt.figure(figsize=(10,8))
