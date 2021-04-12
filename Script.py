@@ -19,3 +19,13 @@ only_start_stations_mask = ~np.isin(start_stations_ids_arr, end_stations_ids_arr
 only_end_stations_mask = ~np.isin(end_stations_ids_arr, start_stations_ids_arr)
 print("Stanice, kde vypujcky pouze zacinaji: " + str(start_stations_ids_arr[only_start_stations_mask]))
 print("Stanice, kde vypujcky pouze konci: " + str(end_stations_ids_arr[only_end_stations_mask]))
+
+df_stations_freq = pd.DataFrame(stations_ids_arr, columns=['station_id'])
+df_stations_freq['start_station_count'] = df_stations_freq.apply(lambda x: np.where(df['start_station_id'] == x['station_id'], True, False).sum(), axis=1)
+df_stations_freq['end_station_count'] = df_stations_freq.apply(lambda x: np.where(df['end_station_id'] == x['station_id'], True, False).sum(), axis=1)
+print("Stanice s nejcastejsim zacatkem vypujcky:")
+print(df_stations_freq.sort_values('start_station_count', ascending=False).head(10).to_string(index=False))
+print("Stanice s nejcastejsim koncem vypujcky:")
+print(df_stations_freq.sort_values('end_station_count', ascending=False).head(10).to_string(index=False))
+
+
