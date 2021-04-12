@@ -1,6 +1,7 @@
 import sqlalchemy
 import pandas as pd
 import numpy as np
+from geopy.distance import geodesic
 
 conn_string = f"mysql+pymysql://student:p7@vw7MCatmnKjy7@data.engeto.com/data"
 alchemy_conn = sqlalchemy.create_engine(conn_string)
@@ -18,14 +19,37 @@ print("Celkovy pocet stanic: " + str(stations_ids_arr.shape[0]))
 only_start_stations_mask = ~np.isin(start_stations_ids_arr, end_stations_ids_arr)
 only_end_stations_mask = ~np.isin(end_stations_ids_arr, start_stations_ids_arr)
 print("Stanice, kde vypujcky pouze zacinaji: " + str(start_stations_ids_arr[only_start_stations_mask]))
-print("Stanice, kde vypujcky pouze konci: " + str(end_stations_ids_arr[only_end_stations_mask]))
+print("Stanice, kde vypujcky pouze konci: " + str(end_stations_ids_arr[only_end_stations_mask]) + "\n")
 
 df_stations_freq = pd.DataFrame(stations_ids_arr, columns=['station_id'])
 df_stations_freq['start_station_count'] = df_stations_freq.apply(lambda x: np.where(df['start_station_id'] == x['station_id'], True, False).sum(), axis=1)
 df_stations_freq['end_station_count'] = df_stations_freq.apply(lambda x: np.where(df['end_station_id'] == x['station_id'], True, False).sum(), axis=1)
 print("Stanice s nejcastejsim zacatkem vypujcky:")
-print(df_stations_freq.sort_values('start_station_count', ascending=False).head(10).to_string(index=False))
+print(df_stations_freq.sort_values('start_station_count', ascending=False).head(10).to_string(index=False) + "\n")
 print("Stanice s nejcastejsim koncem vypujcky:")
-print(df_stations_freq.sort_values('end_station_count', ascending=False).head(10).to_string(index=False))
+print(df_stations_freq.sort_values('end_station_count', ascending=False).head(10).to_string(index=False) + "\n")
 
 
+def station_coords(station_id):
+    station_lat = df.loc[df['start_station_id'] == station_id, 'start_station_latitude']
+    station_lon = df.loc[df['start_station_id'] == station_id, 'start_station_longitude']
+    if len(station_lat) == 0:
+        station_lat = df.loc[df['end_station_id'] == station_id, 'end_station_latitude'].iloc[0]
+        station_lon = df.loc[df['end_station_id'] == station_id, 'end_station_longitude'].iloc[0]
+    else:
+        station_lat = station_lat.iloc[0]
+        station_lon = station_lon.iloc[0]
+    return (station_lat, station_lon)
+
+
+stations_distances = np.empty(shape=(stations_ids_arr.shape[0],stations_ids_arr.shape[0]))
+for index1 in range(len(stations_ids_arr)):
+    station1_id = stations_ids_arr[index1]
+    coords_1 = station_coords(station1_id)
+    for index2 in range(len(stations_ids_arr)):
+        station2_id = stations_ids_arr[index2]
+        coords_2 = station_coords(station2_id)
+        stations_distances[index1, index2] = geodesic(coords_1, coords_2).km
+
+print("Nasledujici matice rozmeru " + str(stations_distances.shape) + " obsahuje vzdalenosti v km mezi jednotlivymi stanicemi:")
+print(stations_distances)
