@@ -8,6 +8,7 @@ conn_string = f"mysql+pymysql://student:p7@vw7MCatmnKjy7@data.engeto.com/data"
 alchemy_conn = sqlalchemy.create_engine(conn_string)
 
 df = pd.read_sql('edinburgh_bikes', alchemy_conn, parse_dates=True)
+df_weather = pd.read_sql('edinburgh_weather', alchemy_conn, parse_dates=True)
 df['weekday'] = ((pd.to_datetime(df['started_at']).dt.dayofweek == 5) | (pd.to_datetime(df['started_at']).dt.dayofweek == 6)).astype(int)
 
 print("Celkovy pocet vypujcek od '" + str(df['started_at'].min()).split()[0] + "' do '" + str(df['ended_at'].max()).split()[0] + "': " + str(len(df.index)))
@@ -59,22 +60,30 @@ print(stations_distances + "\n")
 
 pocet_vypujcek_df = df['started_at'].groupby([pd.to_datetime(df['started_at']).dt.isocalendar().year, pd.to_datetime(df['started_at']).dt.isocalendar().week]).count()
 delka_vypujcek_df = df[['started_at', 'duration']].groupby([pd.to_datetime(df['started_at']).dt.isocalendar().year, pd.to_datetime(df['started_at']).dt.isocalendar().week])['duration'].mean()/60
+df_weather['datetime'] = df_weather['date'] + ' ' + df_weather['time']
+df_weather['temp'] = pd.to_numeric(df_weather['temp'].str.split(" ").str[0])
+df_weather_temp = df_weather[['datetime', 'temp']].groupby([pd.to_datetime(df_weather['datetime']).dt.isocalendar().year, pd.to_datetime(df_weather['datetime']).dt.isocalendar().week])['temp'].mean()
 
 fig = plt.figure(figsize=(10,8))
 
 ax1 = plt.subplot2grid((2,2), (0,0))
 pocet_vypujcek_df.plot(ax=ax1, title='Vývoj počtu výpůjček kol v čase', grid=True)
 ax1.set_ylabel('počet výpůjček')
-ax1.set_xlabel('rok a měsíc')
+ax1.set_xlabel('rok a týden')
 
 ax2 = plt.subplot2grid((2,2), (0,1))
 delka_vypujcek_df.plot(ax=ax2, title='Vývoj průměrné délky výpůjček kol v čase', grid=True)
 ax2.set_ylabel('průměrná délka výpůjčky [min]')
-ax2.set_xlabel('rok a měsíc')
+ax2.set_xlabel('rok a týden')
 
 ax3 = plt.subplot2grid((2,2), (1,0))
 pd.DataFrame({'pocet': [len(df[df['weekday'] == 1]), len(df[df['weekday'] == 0])]}, index=['víkend', 'pracovní dny']).plot.pie(ax=ax3, y='pocet', autopct='%1.1f%%', title='Výpůjčky o víkendu/pracovní dny')
 ax3.legend(loc="lower right")
+
+ax4 = plt.subplot2grid((2,2), (1,1))
+df_weather_temp.plot(ax=ax4, title='Vývoj průměrné teploty v čase', grid=True)
+ax4.set_ylabel('průměrná teplota [°C]')
+ax4.set_xlabel('rok a týden')
 
 plt.tight_layout()
 plt.show()
