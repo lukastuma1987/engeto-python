@@ -8,6 +8,7 @@ conn_string = f"mysql+pymysql://student:p7@vw7MCatmnKjy7@data.engeto.com/data"
 alchemy_conn = sqlalchemy.create_engine(conn_string)
 
 df = pd.read_sql('edinburgh_bikes', alchemy_conn, parse_dates=True)
+df['weekday'] = ((pd.to_datetime(df['started_at']).dt.dayofweek == 5) | (pd.to_datetime(df['started_at']).dt.dayofweek == 6)).astype(int)
 
 print("Celkovy pocet vypujcek od '" + str(df['started_at'].min()).split()[0] + "' do '" + str(df['ended_at'].max()).split()[0] + "': " + str(len(df.index)))
 print("Prumerna delka trvani vypujcky: " + str(int(np.round(df['duration'].mean() / 60))) + " min a " + str(int(((df['duration'].mean() / 60) % 1) * 60)) + " sec")
@@ -58,8 +59,6 @@ print(stations_distances + "\n")
 
 pocet_vypujcek_df = df['started_at'].groupby([pd.to_datetime(df['started_at']).dt.isocalendar().year, pd.to_datetime(df['started_at']).dt.isocalendar().week]).count()
 delka_vypujcek_df = df[['started_at', 'duration']].groupby([pd.to_datetime(df['started_at']).dt.isocalendar().year, pd.to_datetime(df['started_at']).dt.isocalendar().week])['duration'].mean()/60
-print(delka_vypujcek_df.head())
-
 
 fig = plt.figure(figsize=(10,8))
 
@@ -72,6 +71,10 @@ ax2 = plt.subplot2grid((2,2), (0,1))
 delka_vypujcek_df.plot(ax=ax2, title='Vývoj průměrné délky výpůjček kol v čase', grid=True)
 ax2.set_ylabel('průměrná délka výpůjčky [min]')
 ax2.set_xlabel('rok a měsíc')
+
+ax3 = plt.subplot2grid((2,2), (1,0))
+pd.DataFrame({'pocet': [len(df[df['weekday'] == 1]), len(df[df['weekday'] == 0])]}, index=['víkend', 'pracovní dny']).plot.pie(ax=ax3, y='pocet', autopct='%1.1f%%', title='Výpůjčky o víkendu/pracovní dny')
+ax3.legend(loc="lower right")
 
 plt.tight_layout()
 plt.show()
