@@ -69,31 +69,26 @@ df_weather_temp = df_weather[['datetime', 'temp']].groupby([pd.to_datetime(df_we
 fig = plt.figure(figsize=(15,8))
 gs = gridspec.GridSpec(2, 3)
 
-#ax1 = plt.subplot2grid((2,2), (0,0))
 ax1 = plt.subplot(gs[0,0])
 df.hist(ax=ax1, column='duration_hours', grid=True, log=True)
 ax1.title.set_text('Histogram trvání výpůjček kol')
 ax1.set_ylabel('počet výpůjček')
 ax1.set_xlabel('trvání výpůjčky [hod]')
 
-#ax2 = plt.subplot2grid((2,2), (0,1))
 ax2 = plt.subplot(gs[0,1])
 pocet_vypujcek_df.plot(ax=ax2, title='Vývoj počtu výpůjček kol v čase', grid=True)
 ax2.set_ylabel('počet výpůjček')
 ax2.set_xlabel('rok a týden')
 
-#ax3 = plt.subplot2grid((2,2), (0,2))
 ax3 = plt.subplot(gs[0,2])
 delka_vypujcek_df.plot(ax=ax3, title='Vývoj průměrné délky výpůjček kol v čase', grid=True)
 ax3.set_ylabel('průměrná délka výpůjčky [min]')
 ax3.set_xlabel('rok a týden')
 
-#ax4 = plt.subplot2grid((2,2), (1,0))
 ax4 = plt.subplot(gs[1,0])
 pd.DataFrame({'pocet': [len(df[df['weekday'] == 1]), len(df[df['weekday'] == 0])]}, index=['víkend', 'pracovní dny']).plot.pie(ax=ax4, y='pocet', autopct='%1.1f%%', title='Výpůjčky o víkendu/pracovní dny')
 ax4.legend(loc="lower right")
 
-#ax5 = plt.subplot2grid((2,2), (1,1))
 ax5 = plt.subplot(gs[1,1])
 df_weather_temp.plot(ax=ax5, title='Vývoj průměrné teploty v čase', grid=True)
 ax5.set_ylabel('průměrná teplota [°C]')
